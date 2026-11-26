@@ -150,24 +150,24 @@ export default function EditModal({ transaction, onClose, onSave, onDelete }) {
           ) : (
             <>
               <div>
-                <label className="text-xs text-zinc-400 block mb-1">Categoría de Gasto</label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full bg-[#18181C] text-white border border-white/[0.08] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-white/30"
-                >
-                  {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs text-zinc-400 block mb-1">Descripción</label>
+                <label className="text-xs text-zinc-400 block mb-1">Nombre del producto o insumo</label>
                 <input
                   type="text"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full bg-[#18181C] text-white border border-white/[0.08] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-white/30"
                   required
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-zinc-400 block mb-1">Nota u observación</label>
+                <input
+                  type="text"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Opcional"
+                  className="w-full bg-[#18181C] text-white border border-white/[0.08] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-white/30"
                 />
               </div>
             </>

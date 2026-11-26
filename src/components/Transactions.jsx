@@ -231,15 +231,23 @@ export default function Transactions({
                       <span className="text-xs font-bold text-white truncate max-w-[170px]">
                         {isWash ? tx.vehicle : tx.description}
                       </span>
-                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-white/[0.06] text-zinc-400 border border-white/[0.04]">
-                        {tx.category}
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded border ${
+                        isWash 
+                          ? 'bg-white/[0.06] text-zinc-400 border-white/[0.04]' 
+                          : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                      }`}>
+                        {isWash ? tx.category : 'Insumo'}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2 mt-0.5 text-[11px] text-zinc-400">
                       <span>{formatFriendlyDate(tx.date)}</span>
-                      <span>•</span>
-                      <span>{isWash ? tx.service : 'Insumo'}</span>
+                      {isWash && (
+                        <>
+                          <span>•</span>
+                          <span>{tx.service}</span>
+                        </>
+                      )}
                       {isWash && tx.paymentMethod && (
                         <>
                           <span>•</span>
