@@ -6,7 +6,6 @@ import {
   Volume2, 
   VolumeX, 
   Disc3, 
-  Music2, 
   ChevronDown, 
   ChevronUp 
 } from 'lucide-react';
@@ -17,55 +16,70 @@ export default function MusicPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [needsGesture, setNeedsGesture] = useState(false);
   const audioRef = useRef(null);
 
-  // Attempt autoplay immediately and register global capture listeners
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    let hasStarted = false;
+    let started = false;
 
-    const playAudio = async () => {
-      if (!audioRef.current || hasStarted) return;
-      try {
-        await audioRef.current.play();
-        setIsPlaying(true);
-        setNeedsGesture(false);
-        hasStarted = true;
-      } catch (err) {
-        // Autoplay policy blocked zero-click unmuted sound
-        setIsPlaying(false);
-        setNeedsGesture(true);
-      }
+    // 1. Direct attempt to play unmuted audio immediately
+    const forcePlay = () => {
+      if (started || !audioRef.current) return;
+      audioRef.current.play()
+        .then(() => {
+          setIsPlaying(true);
+          started = true;
+        })
+        .catch(() => {
+          // If browser restricts unmuted autoplay, wait for any ambient activity
+        });
     };
 
-    // Try playing immediately on mount
-    playAudio();
+    forcePlay();
 
-    // Universal gesture handler: triggers on the very first touch/click/scroll anywhere
-    const handleGesture = () => {
-      if (audioRef.current && !hasStarted) {
+    // 2. Comprehensive ambient triggers: focus, mouse movement, visibility, key, scroll, touch
+    const ambientTriggers = [
+      'focus', 
+      'pointermove', 
+      'mousemove', 
+      'touchstart', 
+      'pointerdown', 
+      'keydown', 
+      'scroll', 
+      'click'
+    ];
+
+    const handleAmbientActivity = () => {
+      if (!started && audioRef.current) {
         audioRef.current.play()
           .then(() => {
             setIsPlaying(true);
-            setNeedsGesture(false);
-            hasStarted = true;
+            started = true;
           })
           .catch(() => {});
       }
     };
 
-    const events = ['pointerdown', 'touchstart', 'mousedown', 'click', 'keydown'];
-    events.forEach((evt) => {
-      window.addEventListener(evt, handleGesture, { capture: true, passive: true });
+    ambientTriggers.forEach((event) => {
+      window.addEventListener(event, handleAmbientActivity, { passive: true, capture: true });
+      document.addEventListener(event, handleAmbientActivity, { passive: true, capture: true });
     });
 
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && !started) {
+        forcePlay();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
     return () => {
-      events.forEach((evt) => {
-        window.removeEventListener(evt, handleGesture, { capture: true });
+      ambientTriggers.forEach((event) => {
+        window.removeEventListener(event, handleAmbientActivity, { capture: true });
+        document.removeEventListener(event, handleAmbientActivity, { capture: true });
       });
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [currentTrack]);
 
@@ -77,13 +91,8 @@ export default function MusicPlayer() {
       audioRef.current.src = track.src;
       audioRef.current.load();
       audioRef.current.play()
-        .then(() => {
-          setIsPlaying(true);
-          setNeedsGesture(false);
-        })
-        .catch(() => {
-          setIsPlaying(false);
-        });
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
     }
   };
 
@@ -102,10 +111,7 @@ export default function MusicPlayer() {
       setIsPlaying(false);
     } else {
       audioRef.current.play()
-        .then(() => {
-          setIsPlaying(true);
-          setNeedsGesture(false);
-        })
+        .then(() => setIsPlaying(true))
         .catch((e) => console.log(e));
     }
   };
@@ -127,7 +133,7 @@ export default function MusicPlayer() {
 
   return (
     <div className="w-full max-w-md mx-auto mb-3">
-      {/* Native HTML5 Audio Element in DOM for maximum browser autoplay compatibility */}
+      {/* Native HTML5 Audio Tag */}
       <audio
         ref={audioRef}
         src={currentTrack.src}
@@ -140,7 +146,7 @@ export default function MusicPlayer() {
       />
 
       {isMinimized ? (
-        /* Minimized Floating Pill */
+        /* Minimized Pill */
         <div 
           onClick={() => setIsMinimized(false)}
           className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-[#121215]/95 border border-white/[0.08] backdrop-blur-md shadow-lg cursor-pointer hover:border-white/20 transition"
@@ -165,10 +171,10 @@ export default function MusicPlayer() {
           </div>
         </div>
       ) : (
-        /* Full Sleek Audio Player */
+        /* Full Player */
         <div className="relative overflow-hidden rounded-2xl bg-[#121215] border border-white/[0.08] p-3 shadow-md transition-all">
           <div className="flex items-center justify-between gap-2.5">
-            {/* Vinyl / Cover Icon */}
+            {/* Cover / Vinyl */}
             <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 border border-white/[0.1] flex items-center justify-center flex-shrink-0 shadow-inner">
               <Disc3 
                 className={`w-5 h-5 text-emerald-400 transition-transform ${isPlaying ? 'animate-spin' : ''}`} 
@@ -194,7 +200,7 @@ export default function MusicPlayer() {
               </p>
             </div>
 
-            {/* Equalizer animation bars */}
+            {/* Equalizer animation */}
             <div className="flex items-end gap-0.5 h-4 px-1">
               <span className={`w-0.5 bg-emerald-400 rounded-full transition-all duration-150 ${isPlaying ? 'h-3.5 animate-pulse' : 'h-1 opacity-40'}`} />
               <span className={`w-0.5 bg-emerald-400 rounded-full transition-all duration-200 ${isPlaying ? 'h-4 animate-bounce' : 'h-1.5 opacity-40'}`} style={{ animationDelay: '100ms' }} />
@@ -248,20 +254,6 @@ export default function MusicPlayer() {
               </button>
             </div>
           </div>
-
-          {/* Quick notice if waiting for the first gesture */}
-          {needsGesture && !isPlaying && (
-            <div 
-              onClick={togglePlay}
-              className="mt-2 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-zinc-400 cursor-pointer hover:text-emerald-400 transition"
-            >
-              <span className="flex items-center gap-1.5 text-zinc-300">
-                <Music2 className="w-3 h-3 text-emerald-400 animate-pulse" />
-                Tocá cualquier parte de la pantalla para activar
-              </span>
-              <span className="font-semibold text-emerald-400 underline">Sonar</span>
-            </div>
-          )}
         </div>
       )}
     </div>
