@@ -17,75 +17,69 @@ export default function MusicPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+  const [needsGesture, setNeedsGesture] = useState(false);
   const audioRef = useRef(null);
 
-  // Initialize audio and attempt autoplay
+  // Attempt autoplay immediately and register global capture listeners
   useEffect(() => {
-    if (!currentTrack) return;
+    const audio = audioRef.current;
+    if (!audio) return;
 
-    const audio = new Audio(currentTrack.src);
-    audio.preload = 'auto';
-    audioRef.current = audio;
+    let hasStarted = false;
 
-    const attemptPlay = () => {
-      audio.play()
-        .then(() => {
-          setIsPlaying(true);
-          setAutoplayBlocked(false);
-        })
-        .catch((err) => {
-          console.log("Browser autoplay policy prevented immediate playback until interaction:", err);
-          setIsPlaying(false);
-          setAutoplayBlocked(true);
-
-          // Listen for the very first interaction anywhere on the screen
-          const handleFirstInteraction = () => {
-            audio.play()
-              .then(() => {
-                setIsPlaying(true);
-                setAutoplayBlocked(false);
-              })
-              .catch((e) => console.log("Still waiting for user gesture:", e));
-          };
-
-          window.addEventListener('click', handleFirstInteraction, { once: true });
-          window.addEventListener('touchstart', handleFirstInteraction, { once: true });
-          window.addEventListener('keydown', handleFirstInteraction, { once: true });
-        });
-    };
-
-    attemptPlay();
-
-    // When song finishes, play another random track
-    const handleEnded = () => {
-      const next = getRandomTrack(currentTrack.id);
-      if (next) {
-        changeTrack(next);
+    const playAudio = async () => {
+      if (!audioRef.current || hasStarted) return;
+      try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+        setNeedsGesture(false);
+        hasStarted = true;
+      } catch (err) {
+        // Autoplay policy blocked zero-click unmuted sound
+        setIsPlaying(false);
+        setNeedsGesture(true);
       }
     };
 
-    audio.addEventListener('ended', handleEnded);
+    // Try playing immediately on mount
+    playAudio();
+
+    // Universal gesture handler: triggers on the very first touch/click/scroll anywhere
+    const handleGesture = () => {
+      if (audioRef.current && !hasStarted) {
+        audioRef.current.play()
+          .then(() => {
+            setIsPlaying(true);
+            setNeedsGesture(false);
+            hasStarted = true;
+          })
+          .catch(() => {});
+      }
+    };
+
+    const events = ['pointerdown', 'touchstart', 'mousedown', 'click', 'keydown'];
+    events.forEach((evt) => {
+      window.addEventListener(evt, handleGesture, { capture: true, passive: true });
+    });
 
     return () => {
-      audio.removeEventListener('ended', handleEnded);
-      audio.pause();
-      audio.src = '';
+      events.forEach((evt) => {
+        window.removeEventListener(evt, handleGesture, { capture: true });
+      });
     };
-  }, []);
+  }, [currentTrack]);
 
   const changeTrack = (track) => {
     if (!track) return;
     setCurrentTrack(track);
 
     if (audioRef.current) {
-      audioRef.current.pause();
       audioRef.current.src = track.src;
       audioRef.current.load();
       audioRef.current.play()
         .then(() => {
           setIsPlaying(true);
-          setAutoplayBlocked(false);
+          setNeedsGesture(false);
         })
         .catch(() => {
           setIsPlaying(false);
@@ -110,7 +104,7 @@ export default function MusicPlayer() {
       audioRef.current.play()
         .then(() => {
           setIsPlaying(true);
-          setAutoplayBlocked(false);
+          setNeedsGesture(false);
         })
         .catch((e) => console.log(e));
     }
@@ -122,10 +116,29 @@ export default function MusicPlayer() {
     setIsMuted(!isMuted);
   };
 
+  const handleSongEnded = () => {
+    const next = getRandomTrack(currentTrack?.id);
+    if (next) {
+      changeTrack(next);
+    }
+  };
+
   if (!currentTrack) return null;
 
   return (
     <div className="w-full max-w-md mx-auto mb-3">
+      {/* Native HTML5 Audio Element in DOM for maximum browser autoplay compatibility */}
+      <audio
+        ref={audioRef}
+        src={currentTrack.src}
+        autoPlay
+        playsInline
+        preload="auto"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={handleSongEnded}
+      />
+
       {isMinimized ? (
         /* Minimized Floating Pill */
         <div 
@@ -236,17 +249,17 @@ export default function MusicPlayer() {
             </div>
           </div>
 
-          {/* Subtle notice if browser blocked initial unmuted autoplay */}
-          {autoplayBlocked && !isPlaying && (
+          {/* Quick notice if waiting for the first gesture */}
+          {needsGesture && !isPlaying && (
             <div 
               onClick={togglePlay}
               className="mt-2 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-zinc-400 cursor-pointer hover:text-emerald-400 transition"
             >
-              <span className="flex items-center gap-1.5">
-                <Music2 className="w-3 h-3 text-emerald-400" />
-                Toca la pantalla para activar el audio
+              <span className="flex items-center gap-1.5 text-zinc-300">
+                <Music2 className="w-3 h-3 text-emerald-400 animate-pulse" />
+                Tocá cualquier parte de la pantalla para activar
               </span>
-              <span className="font-semibold text-emerald-400 underline">Reproducir</span>
+              <span className="font-semibold text-emerald-400 underline">Sonar</span>
             </div>
           )}
         </div>
