@@ -13,7 +13,7 @@ import { formatCurrency, filterTransactionsByPeriod, getWeekendRange } from '../
 import { VEHICLE_CATEGORIES } from '../data/initialData';
 
 export default function Dashboard({ transactions, onNavigateTo }) {
-  const [period, setPeriod] = useState('mes'); // 'finde' | 'mes' | 'total'
+  const [period, setPeriod] = useState('total'); // 'finde' | 'mes' | 'total'
 
   // Filtered transactions for the current period
   const filtered = useMemo(() => {
