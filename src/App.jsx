@@ -6,7 +6,7 @@ import WashForm from './components/WashForm';
 import ExpenseForm from './components/ExpenseForm';
 import Transactions from './components/Transactions';
 import EditModal from './components/EditModal';
-import MusicPlayer from './components/MusicPlayer';
+import SpotifyPlayer from './components/SpotifyPlayer';
 import { loadTransactions, saveTransactions } from './utils/storage';
 import { 
   subscribeToTransactions, 
@@ -128,8 +128,8 @@ export default function App() {
 
       {/* Main Content Area constrained to mobile width */}
       <main className="flex-1 w-full max-w-md mx-auto px-4 pt-3">
-        {/* Background Music Player with Artist and Song identification */}
-        <MusicPlayer />
+        {/* Spotify Official Playlist Player */}
+        <SpotifyPlayer />
 
         {activeTab === 'dashboard' && (
           <Dashboard
