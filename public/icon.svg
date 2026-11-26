@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="128" fill="#09090B"/>
+  <rect x="16" y="16" width="480" height="480" rx="112" stroke="rgba(255,255,255,0.1)" stroke-width="8"/>
+  <path d="M140 340 L210 180 L280 340 M165 295 L255 295" stroke="#FAFAFA" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
+  <!-- Sparkle / Diamond / Clean car icon -->
+  <path d="M256 120 L274 200 L354 218 L274 236 L256 316 L238 236 L158 218 L238 200 Z" fill="#FAFAFA"/>
+  <path d="M360 280 L368 316 L404 324 L368 332 L360 368 L352 332 L316 324 L352 316 Z" fill="#34D399"/>
+  <!-- Subtle metallic shine line -->
+  <path d="M120 370 C 190 340, 322 340, 392 370" stroke="rgba(255,255,255,0.6)" stroke-width="12" stroke-linecap="round"/>
+</svg>

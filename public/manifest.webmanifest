@@ -1,0 +1,18 @@
+{
+  "name": "Bling Bling Detail",
+  "short_name": "BlingBling",
+  "description": "Control financiero para detailing y lavado vehicular",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090B",
+  "theme_color": "#09090B",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
