@@ -127,10 +127,7 @@ export default function App() {
       />
 
       {/* Main Content Area constrained to mobile width */}
-      <main className="flex-1 w-full max-w-md mx-auto px-4 pt-3">
-        {/* Background Music Player with Artist and Song identification */}
-        <MusicPlayer />
-
+      <main className="flex-1 w-full max-w-md mx-auto px-4 pt-4 pb-36">
         {activeTab === 'dashboard' && (
           <Dashboard
             transactions={transactions}
@@ -175,6 +172,9 @@ export default function App() {
           onDelete={handleDeleteTransaction}
         />
       )}
+
+      {/* Floating Bottom Music Player Dock */}
+      <MusicPlayer />
 
       {/* Mobile-first Bottom Navigation Bar */}
       <BottomNav

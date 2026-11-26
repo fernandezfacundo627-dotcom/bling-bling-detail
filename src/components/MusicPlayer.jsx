@@ -132,7 +132,7 @@ export default function MusicPlayer() {
   if (!currentTrack) return null;
 
   return (
-    <div className="w-full max-w-md mx-auto mb-3">
+    <div className="fixed bottom-[4.25rem] left-0 right-0 z-30 px-3 max-w-md mx-auto pointer-events-auto">
       {/* Native HTML5 Audio Tag */}
       <audio
         ref={audioRef}
